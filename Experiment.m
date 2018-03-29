@@ -5,16 +5,32 @@ addpath('./Functions');
 Screen('Preference', 'SkipSyncTests', 1);
 
 try
+    
+    %===== Experimental parameters (from Tren) ====%
+    TR=2;
+    N_RUN=4;
+    LockToTR=1;
+    MaxRT=1.8;
+    KbName('UnifyKeyNames');
+    Btns=KbName({'1!','2@'});
+    BtnNames={'LEFT','RIGHT'};
+    ESCKey=KbName('ESCAPE');
+    InitKey=KbName('0)');
+    PAD=[5,10]; % [TR]: Padding fixations at a run start/end
+
+
     %===== Parameters =====%
     initialCash         = 10000;
     initialStock        = 10;
     initialStockPrice   = 100;
-    totalTrials         = 100;
-    practiceTrials      = 15;
     
-    resultTime          =8;
+    totalTrials         = 3;
+    practiceTrials      = 3;
+    
+    resultTime          =10;
+    gaptime             =2;  %supposed to be 2~6 sec gitter
     decideTime          =6;
-    fixationTime        =1;
+    fixationTime        =2;  %supposed to be 2~6 sec gitter
     
     %===== Constants =====%
     MARKET_BASELINE     = 1;
@@ -23,20 +39,25 @@ try
     TRUE                = 1;
     FALSE               = 0;
     
-    %===== IP Config for 505 ===%
-    myID = input('This seat: ','s');
-    oppID = input('Opp seat: ','s');
-    fprintf('cmd to open terminal. "IPConfig" to get IP (the one with 172.16.10.xxx)\n');
-    myIP = input('This IP: ','s');
-    myIP = strcat('172.16.10.',myIP);
-    oppIP = input('Opp IP: ','s');
-    oppIP = strcat('172.16.10.',oppIP);
-    myPort = 5454;
-    oppPort = 5454;
-    if myID(2) == 'a' | myID(2)=='A'
-        rule = 'player1';
+    
+    %===== IP Config for local testing ===%
+    rule = input('Enter rule(player1/player2): ','s');
+    assert(strcmp(rule,'player1') || strcmp(rule,'player2'))
+    
+    myID    = 'test';
+    oppID   = 'test';
+    myIP    = 'localhost';
+    oppIP   = 'localhost';
+    if strcmp(rule,'player1')
+        myPort  = 5656;
+        oppPort = 7878;
+        displayerOn = TRUE;
+        autoMode = TRUE;
     else
-        rule = 'player2';
+        myPort  = 7878;
+        oppPort = 5656;
+        displayerOn = FALSE;
+        autoMode = TRUE;
     end
     
     %===== Inputs =====%
@@ -45,8 +66,8 @@ try
     %myID                = input('your ID: ','s');
     %oppID               = input('Opponent ID: ','s');
     inputDeviceName     = 'Mac';
-    displayerOn         = TRUE;
-    screenID            = 0;
+    %displayerOn         = FALSE;
+    screenID            = max(Screen('Screens'));;
     
     %===== Initialize Componets =====%
     keyboard    = keyboardHandler(inputDeviceName);
@@ -61,170 +82,186 @@ try
     
     %===== Open Screen =====% 
     fprintf('Start after 10 seconds\n');
-    WaitSecs(10);
+    %WaitSecs(10);
     displayer.openScreen();
     
+    %===== fMRI initialization =====%
+    
+    if strcmp(rule,'player1')
+        displayer.writeMessage('Wait for instructions','');
+        fprintf('Waiting for Operator to start\n');
+        keyboard.waitSpacePress();
+        displayer.blackScreen();
+        fprintf('Operator started the program.\n');
+    end
+    
+    
+    %%%%%%%%%%%%%%%%%%%%  Start of practice %%%%%%%%%%%%%%%%%%%% 
+    while FALSE
+    
+%     %===== Start of practice =====%
+%     
+%     displayer.writeMessage('Press space to start practice','');
+%     keyboard.waitSpacePress();
+%     displayer.blackScreen();
+%     fprintf('Start Practice.\n');
+%     
+%     %reinitialized components
+%     prac_mrk      = market(MARKET_BASELINE,initialStockPrice);
+%     prac_me          = player(initialCash,initialStock);
+%     prac_opp         = player(initialCash,initialStock);
+%     prac_data        = dataHandler(myID,oppID,rule,practiceTrials);
+%     
+%     for trial = 1:practiceTrials+1
+% 
+%         %=========== Setting Up Trials ==============%
+%        
+%         % Update condition based on last decision
+%         prac_data.updateCondition(prac_mrk,prac_me,prac_opp,trial);
+%         statusData = prac_data.getStatusData(trial);
+%         if(trial == practiceTrials+1) break; end
+%         
+%         %response to get
+%         myRes.decision = 'no trade';
+%         myRes.events = cell(0,2);
+%         
+%         %=========== Fixation ==============%
+%         displayer.fixation(fixationTime);
+%        
+%         %========== Show Status and Make Decision ===============%
+% 
+%         prac_data.logStatus(trial);
+%         startTime = GetSecs();
+%         deadline = startTime+resultTime+decideTime;
+%         decisionMade = FALSE;
+%         showHiddenInfo = FALSE;
+%         
+%         for remaining = resultTime+decideTime:-1:1
+%             endOfThisSecond = deadline - remaining;
+%             while GetSecs() < endOfThisSecond
+%                 if ~decisionMade
+%                     displayer.showDecision(statusData,myRes.decision,showHiddenInfo,remaining,FALSE);
+%                     
+%                     [keyName,timing] = keyboard.getResponse(endOfThisSecond);
+%                      
+%                     if remaining > decideTime && ~strcmp(keyName,'na')
+%                         myRes.events{end+1,1} = keyName;
+%                         myRes.events{end,2} = num2str(timing-startTime);
+%                         fprintf('%s %s\n',keyName,num2str(timing-startTime));  
+%                         
+%                         if strcmp(keyName,'quitkey')
+%                             displayer.closeScreen();
+%                             ListenChar();
+%                             fprintf('---- MANUALLY STOPPED ----\n');
+%                             return;
+%                         end
+%                         
+%                         if strcmp(keyName,'see')
+%                             showHiddenInfo = TRUE;
+%                         end
+%                         
+%                         if strcmp(keyName,'unsee')
+%                             showHiddenInfo = FALSE;
+%                         end
+%                     
+%                     end
+%                     
+%                     
+%                     if remaining <= decideTime && ~strcmp(keyName,'na')
+%                         myRes.events{end+1,1} = keyName;
+%                         myRes.events{end,2} = num2str(timing-startTime);
+%                         fprintf('%s %s\n',keyName,num2str(timing-startTime));
+%                         
+%                         if strcmp(keyName,'quitkey')
+%                             displayer.closeScreen();
+%                             ListenChar();
+%                             ShowCursor();
+%                             fprintf('---- MANUALLY STOPPED ----\n');
+%                             return;
+%                         end
+%                         
+%                         if strcmp(keyName,'buy') && prac_me.canBuy(prac_mrk.stockPrice)
+%                             myRes.decision = 'buy';
+%                         end
+% 
+%                         if strcmp(keyName,'no trade')
+%                             myRes.decision = 'no trade';
+%                         end
+% 
+%                         if strcmp(keyName,'sell') && prac_me.canSell()
+%                             myRes.decision = 'sell';
+%                         end
+% 
+%                         if strcmp(keyName,'confirm')
+%                             decisionMade = TRUE;
+%                             if showHiddenInfo == TRUE
+%                                 myRes.events{end+1,1} = 'unsee';
+%                                 myRes.events{end,2} = num2str(GetSecs()-startTime);
+%                             end
+%                         end
+% 
+%                         if strcmp(keyName,'see')
+%                             showHiddenInfo = TRUE;
+%                         end
+%                         
+%                         if strcmp(keyName,'unsee')
+%                             showHiddenInfo = FALSE;
+%                         end
+%                     end
+%                 end
+% 
+%                 if decisionMade && GetSecs() < endOfThisSecond
+%                     displayer.showDecision(statusData,myRes.decision,showHiddenInfo,remaining,TRUE);
+%                 end
+%             end
+%         end
+% 
+%         if showHiddenInfo == TRUE
+%             myRes.events{end+1,1} = 'unsee';
+%             myRes.events{end,2} = num2str(GetSecs()-startTime);
+%         end
+%         
+%         if ~decisionMade
+%             myRes.decision = 'no trade';
+%         end
+%         
+%         fprintf('timesUp! decision: %s\n',myRes.decision);
+%         displayer.showDecision(statusData,myRes.decision,FALSE,0,TRUE);
+%         
+%         %========== Exchange and Save Data ===============%
+%         
+%         %Get opponent's response (randomly generated)
+%         resultList = {'buy'; 'no trade'; 'sell'};
+%         oppRes.decision = resultList{randi(3)};
+%         oppRes.events = cell(0,2);
+%         
+%         %Save Data
+%         prac_data.saveResponse(myRes,oppRes,trial);
+%         
+%         %Update market and player
+%         if(strcmp(myRes.decision,'buy'))   prac_me.buyStock(prac_mrk.stockPrice);end
+%         if(strcmp(myRes.decision,'sell'))  prac_me.sellStock(prac_mrk.stockPrice);end
+%         if(strcmp(oppRes.decision,'buy'))  prac_opp.buyStock(prac_mrk.stockPrice);end
+%         if(strcmp(oppRes.decision,'sell')) prac_opp.sellStock(prac_mrk.stockPrice);end
+%         prac_mrk.trade(myRes.decision,oppRes.decision);
+%     end
+%     
+%     displayer.writeMessage('End of Practice','Wait for instructions');
+%     keyboard.waitSpacePress();
+%     displayer.blackScreen();
+    
+    end
+    
+    %%%%%%%%%%%%%%%%%%%%  Start of real experiment %%%%%%%%%%%%%%%%%%%% 
+    
+    
+    %===== Internal initialization =====% 
     displayer.writeMessage('Do not touch any key','Wait for instructions');
-    keyboard.waitSpacePress();
+    WaitSecs(1);
+    %keyboard.waitSpacePress();
     displayer.blackScreen();
     fprintf('Game Start.\n');
     
-    %===== Start of practice =====%
-    
-    displayer.writeMessage('Press space to start practice','');
-    keyboard.waitSpacePress();
-    displayer.blackScreen();
-    fprintf('Start Practice.\n');
-    
-    %reinitialized components
-    prac_mrk      = market(MARKET_BASELINE,initialStockPrice);
-    prac_me          = player(initialCash,initialStock);
-    prac_opp         = player(initialCash,initialStock);
-    prac_data        = dataHandler(myID,oppID,rule,practiceTrials);
-    
-    for trial = 1:practiceTrials+1
-
-        %=========== Setting Up Trials ==============%
-       
-        % Update condition based on last decision
-        prac_data.updateCondition(prac_mrk,prac_me,prac_opp,trial);
-        statusData = prac_data.getStatusData(trial);
-        if(trial == practiceTrials+1) break; end
-        
-        %response to get
-        myRes.decision = 'no trade';
-        myRes.events = cell(0,2);
-        
-        %=========== Fixation ==============%
-        displayer.fixation(fixationTime);
-       
-        %========== Show Status and Make Decision ===============%
-
-        prac_data.logStatus(trial);
-        startTime = GetSecs();
-        deadline = startTime+resultTime+decideTime;
-        decisionMade = FALSE;
-        showHiddenInfo = FALSE;
-        
-        for remaining = resultTime+decideTime:-1:1
-            endOfThisSecond = deadline - remaining;
-            while GetSecs() < endOfThisSecond
-                if ~decisionMade
-                    displayer.showDecision(statusData,myRes.decision,showHiddenInfo,remaining,FALSE);
-                    
-                    [keyName,timing] = keyboard.getResponse(endOfThisSecond);
-                     
-                    if remaining > decideTime && ~strcmp(keyName,'na')
-                        myRes.events{end+1,1} = keyName;
-                        myRes.events{end,2} = num2str(timing-startTime);
-                        fprintf('%s %s\n',keyName,num2str(timing-startTime));  
-                        
-                        if strcmp(keyName,'quitkey')
-                            displayer.closeScreen();
-                            ListenChar();
-                            fprintf('---- MANUALLY STOPPED ----\n');
-                            return;
-                        end
-                        
-                        if strcmp(keyName,'see')
-                            showHiddenInfo = TRUE;
-                        end
-                        
-                        if strcmp(keyName,'unsee')
-                            showHiddenInfo = FALSE;
-                        end
-                    
-                    end
-                    
-                    
-                    if remaining <= decideTime && ~strcmp(keyName,'na')
-                        myRes.events{end+1,1} = keyName;
-                        myRes.events{end,2} = num2str(timing-startTime);
-                        fprintf('%s %s\n',keyName,num2str(timing-startTime));
-                        
-                        if strcmp(keyName,'quitkey')
-                            displayer.closeScreen();
-                            ListenChar();
-                            ShowCursor();
-                            fprintf('---- MANUALLY STOPPED ----\n');
-                            return;
-                        end
-                        
-                        if strcmp(keyName,'buy') && prac_me.canBuy(prac_mrk.stockPrice)
-                            myRes.decision = 'buy';
-                        end
-
-                        if strcmp(keyName,'no trade')
-                            myRes.decision = 'no trade';
-                        end
-
-                        if strcmp(keyName,'sell') && prac_me.canSell()
-                            myRes.decision = 'sell';
-                        end
-
-                        if strcmp(keyName,'confirm')
-                            decisionMade = TRUE;
-                            if showHiddenInfo == TRUE
-                                myRes.events{end+1,1} = 'unsee';
-                                myRes.events{end,2} = num2str(GetSecs()-startTime);
-                            end
-                        end
-
-                        if strcmp(keyName,'see')
-                            showHiddenInfo = TRUE;
-                        end
-                        
-                        if strcmp(keyName,'unsee')
-                            showHiddenInfo = FALSE;
-                        end
-                    end
-                end
-
-                if decisionMade && GetSecs() < endOfThisSecond
-                    displayer.showDecision(statusData,myRes.decision,showHiddenInfo,remaining,TRUE);
-                end
-            end
-        end
-
-        if showHiddenInfo == TRUE
-            myRes.events{end+1,1} = 'unsee';
-            myRes.events{end,2} = num2str(GetSecs()-startTime);
-        end
-        
-        if ~decisionMade
-            myRes.decision = 'no trade';
-        end
-        
-        fprintf('timesUp! decision: %s\n',myRes.decision);
-        displayer.showDecision(statusData,myRes.decision,FALSE,0,TRUE);
-        
-        %========== Exchange and Save Data ===============%
-        
-        %Get opponent's response (randomly generated)
-        resultList = {'buy'; 'no trade'; 'sell'};
-        oppRes.decision = resultList{randi(3)};
-        oppRes.events = cell(0,2);
-        
-        %Save Data
-        prac_data.saveResponse(myRes,oppRes,trial);
-        
-        %Update market and player
-        if(strcmp(myRes.decision,'buy'))   prac_me.buyStock(prac_mrk.stockPrice);end
-        if(strcmp(myRes.decision,'sell'))  prac_me.sellStock(prac_mrk.stockPrice);end
-        if(strcmp(oppRes.decision,'buy'))  prac_opp.buyStock(prac_mrk.stockPrice);end
-        if(strcmp(oppRes.decision,'sell')) prac_opp.sellStock(prac_mrk.stockPrice);end
-        prac_mrk.trade(myRes.decision,oppRes.decision);
-    end
-    
-    displayer.writeMessage('End of Practice','Wait for instructions');
-    keyboard.waitSpacePress();
-    displayer.blackScreen();
-    
-    %===== Start of real experiment =====%
-    
-    displayer.writeMessage('This is the real experiment','Press space to start');
-    keyboard.waitSpacePress();
-    displayer.blackScreen();
     
     %reinitialized components
     market      = market(MARKET_BASELINE,initialStockPrice);
@@ -272,15 +309,26 @@ try
             endOfThisSecond = deadline - remaining;
             while GetSecs() < endOfThisSecond
                 if ~decisionMade
+                    
                     displayer.showDecision(statusData,myRes.decision,showHiddenInfo,remaining,FALSE);
                     
+                    %===Getting Response===%
+                    
                     %Auto Mode
-                    %keyNameList = ['NA', 'buy', 'no trade', 'sell', 'confirm'];
-                    %keyName = keyNameList(randi(5));
+                    if autoMode == TRUE
+                        WaitSecs(0.5);
+                        keyNameList = {'buy', 'no trade', 'sell', 'confirm','see','unsee'};
+                        keyName = keyNameList{randi(6)};
+                        timing = GetSecs();
+                    end
                     
                     %Manual Mode
-                    [keyName,timing] = keyboard.getResponse(endOfThisSecond);
-                     
+                    if autoMode == FALSE
+                        [keyName,timing] = keyboard.getResponse(endOfThisSecond);
+                    end
+                    
+                    %===Processing Response (seeing result)===%
+                    
                     if remaining > decideTime && ~strcmp(keyName,'na')
                         myRes.events{end+1,1} = keyName;
                         myRes.events{end,2} = num2str(timing-startTime);
@@ -302,6 +350,7 @@ try
                         end
                     end
                     
+                    %===Processing Response (making decision)===%
                     
                     if remaining <= decideTime && ~strcmp(keyName,'na')
                         myRes.events{end+1,1} = keyName;
@@ -344,12 +393,12 @@ try
                             showHiddenInfo = FALSE;
                         end
                     end
-                end
+                end %end of decision not made
 
-                if decisionMade && GetSecs() < endOfThisSecond
+                if decisionMade && GetSecs() < endOfThisSecond 
                     displayer.showDecision(statusData,myRes.decision,showHiddenInfo,remaining,TRUE);
                 end
-            end
+            end %while end of this second
         end
 
         if showHiddenInfo == TRUE
@@ -403,13 +452,10 @@ try
     WaitSecs(3);
     displayer.blackScreen();
     WaitSecs(1);
-    displayer.writeMessage('Please fill the questionaire','');
-    WaitSecs(3);
-    displayer.blackScreen();
-    WaitSecs(1);
-    
+
     displayer.closeScreen();
     ListenChar();
+    ShowCursor();
     data.saveToFile();
     fprintf('----END OF EXPERIMENT----\n');
     
