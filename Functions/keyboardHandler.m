@@ -7,30 +7,27 @@ classdef keyboardHandler < handle
     
     properties (Constant)
         quitkey     = 'ESCAPE';
-        confirm     = 'Return';
-        buy         = 'LeftArrow';  %'LeftArrow';
-        noTrade     = 'DownArrow';  %'DownArrow';
-        sell        = 'RightArrow'; %'RightArrow';
-        see         = 'UpArrow';    %'UpArrow';
+        confirm     = '6^';
+        buy         = '1!';  %'LeftArrow';
+        noTrade     = '2@';  %'DownArrow';
+        sell        = '3#';  %'RightArrow';
+        see         = '4$';    %'UpArrow';
+        trigger     = '5%';
     end
     
     methods
         
         %---- Constructor -----%
         function obj = keyboardHandler(keyboardName)
-            obj.setupKeyboard(keyboardName);
+            obj.setupKeyboard();
         end
         
-        function setupKeyboard(obj,keyboardName)
-            if strcmp(keyboardName,'Mac')
-               keyboardName = 'Apple Internal Keyboard / Trackpad';
-            end
-            if strcmp(keyboardName,'Wireless')
-                keyboardName = 'USB Receiver';
-            end
-            if strcmp(keyboardName,'USB')
-                keyboardName = 'USB Keyboard';
-            end
+        function setupKeyboard(obj)
+              
+            
+            %if strcmp(keyboardName,'USB')
+            %    keyboardName = 'USB Keyboard';
+            %end
             
             obj.dev=PsychHID('Devices');
             obj.devInd = find(strcmpi('Keyboard', {obj.dev.usageName}) );
@@ -105,16 +102,18 @@ classdef keyboardHandler < handle
             end
         end
         
-        function waitEscPress(obj)
+        function startTime = waitTrigger(obj)
             KbEventFlush();
             [keyIsDown, firstKeyPressTimes, firstKeyReleaseTimes] = KbQueueCheck(obj.devInd);
             while 1
                 [keyIsDown, firstKeyPressTimes, firstKeyReleaseTimes] = KbQueueCheck(obj.devInd); 
-                if firstKeyPressTimes(KbName(obj.quitkey))
+                if firstKeyPressTimes(KbName(obj.trigger))
+                    startTime = GetSecs();
                     break;
                 end
             end
         end
+        
     end
     
 end

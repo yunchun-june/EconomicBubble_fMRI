@@ -5,18 +5,6 @@ addpath('./Functions');
 Screen('Preference', 'SkipSyncTests', 1);
 
 try
-    
-    %===== Experimental parameters (from Tren) ====%
-    TR=2;
-    N_RUN=4;
-    LockToTR=1;
-    MaxRT=1.8;
-    KbName('UnifyKeyNames');
-    Btns=KbName({'1!','2@'});
-    BtnNames={'LEFT','RIGHT'};
-    ESCKey=KbName('ESCAPE');
-    InitKey=KbName('0)');
-    PAD=[5,10]; % [TR]: Padding fixations at a run start/end
 
 
     %===== Parameters =====%
@@ -86,15 +74,21 @@ try
     displayer.openScreen();
     
     %===== fMRI initialization =====%
+
+    displayer.writeMessage('Wait for instructions','');
+    fprintf('Waiting for trigger\n');
+    triggerZero = keyboard.waitTrigger();
+    fprintf('Operator started the program.\n');
+    displayer.blackScreen();
+    WaitSecs(1);
     
-    if strcmp(rule,'player1')
-        displayer.writeMessage('Wait for instructions','');
-        fprintf('Waiting for Operator to start\n');
-        keyboard.waitSpacePress();
-        displayer.blackScreen();
-        fprintf('Operator started the program.\n');
-    end
-    
+    displayer.writeMessage('Press space to start.','');
+    fprintf('Waiting for subject to press space\n');
+    keyboard.waitSpacePress();
+    fprintf('Operator started the program.\n');
+    displayer.blackScreen();
+    WaitSecs(1);
+
     
     %%%%%%%%%%%%%%%%%%%%  Start of practice %%%%%%%%%%%%%%%%%%%% 
     while FALSE
@@ -252,16 +246,7 @@ try
     
     end
     
-    %%%%%%%%%%%%%%%%%%%%  Start of real experiment %%%%%%%%%%%%%%%%%%%% 
-    
-    
-    %===== Internal initialization =====% 
-    displayer.writeMessage('Do not touch any key','Wait for instructions');
-    WaitSecs(1);
-    %keyboard.waitSpacePress();
-    displayer.blackScreen();
-    fprintf('Game Start.\n');
-    
+    %%%%%%%%%%%%%%%%%%%%  Start of real experiment %%%%%%%%%%%%%%%%%%%%
     
     %reinitialized components
     market      = market(MARKET_BASELINE,initialStockPrice);
@@ -289,11 +274,7 @@ try
         data.updateCondition(market,me,opp,trial);
         statusData = data.getStatusData(trial);
         if(trial == totalTrials+1) break; end
-        
-        %response to get
-        myRes.decision = 'no trade';
-        myRes.events = cell(0,2);
-        
+       
         %=========== Fixation ==============%
         displayer.fixation(fixationTime);
        
@@ -304,6 +285,11 @@ try
         deadline = startTime+resultTime+decideTime;
         decisionMade = FALSE;
         showHiddenInfo = FALSE;
+        
+        %response to get
+        myRes.decision = 'no trade';
+        myRes.events = cell(0,2);
+        myRes.startOfTrial = startTime;
         
         for remaining = resultTime+decideTime:-1:1
             endOfThisSecond = deadline - remaining;
@@ -331,8 +317,8 @@ try
                     
                     if remaining > decideTime && ~strcmp(keyName,'na')
                         myRes.events{end+1,1} = keyName;
-                        myRes.events{end,2} = num2str(timing-startTime);
-                        fprintf('%s %s\n',keyName,num2str(timing-startTime));  
+                        myRes.events{end,2} = num2str(timing-triggerZero);
+                        fprintf('%s %s\n',keyName,num2str(timing-triggerZero));  
                         
                         if strcmp(keyName,'quitkey')
                             displayer.closeScreen();
@@ -354,8 +340,8 @@ try
                     
                     if remaining <= decideTime && ~strcmp(keyName,'na')
                         myRes.events{end+1,1} = keyName;
-                        myRes.events{end,2} = num2str(timing-startTime);
-                        fprintf('%s %s\n',keyName,num2str(timing-startTime));
+                        myRes.events{end,2} = num2str(timing-triggerZero);
+                        fprintf('%s %s\n',keyName,num2str(timing-triggerZero));
                         
                         if strcmp(keyName,'quitkey')
                             displayer.closeScreen();
@@ -381,7 +367,7 @@ try
                             decisionMade = TRUE;
                             if showHiddenInfo == TRUE
                                 myRes.events{end+1,1} = 'unsee';
-                                myRes.events{end,2} = num2str(GetSecs()-startTime);
+                                myRes.events{end,2} = num2str(GetSecs()-triggerZero);
                             end
                         end
 
@@ -403,7 +389,7 @@ try
 
         if showHiddenInfo == TRUE
             myRes.events{end+1,1} = 'unsee';
-            myRes.events{end,2} = num2str(GetSecs()-startTime);
+            myRes.events{end,2} = num2str(GetSecs()-triggerZero);
         end
         
         if ~decisionMade

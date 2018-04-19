@@ -15,8 +15,8 @@ classdef dataHandler <handle
 %    player1event           =12
 %    player2Decision        =13
 %    player2event           =14
-   
-    
+%    startofTrial           =15
+
     properties
         player1ID
         player2ID
@@ -78,6 +78,10 @@ classdef dataHandler <handle
             obj.result{trial,12} = p1Res.events;
             obj.result{trial,13} = p2Res.decision;
             obj.result{trial,14} = p2Res.events;
+            
+            obj.result{trial,15} = p1Res.startOfTrial;
+            obj.result{trial,15} = p2Res.startOfTrial
+            
         end
         
         function logStatus(obj,trial)
