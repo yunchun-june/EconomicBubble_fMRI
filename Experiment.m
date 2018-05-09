@@ -90,7 +90,7 @@ try
         
         if mod(trial,sizeOfBlock) == 1
             if strcmp(rule,'player1')
-                displayer.writeMessage('Start of block','Wait for instructions');
+                displayer.writeMessage('Start of block','Waiting for fMRI...');
                 fprintf('Waiting for trigger...\n');
                 triggerZero = keyboard.waitTrigger();
                 fprintf('Trigger received, starting block.\n');
@@ -263,6 +263,19 @@ try
         if(strcmp(oppRes.decision,'buy'))  opp.buyStock(market.stockPrice);end
         if(strcmp(oppRes.decision,'sell')) opp.sellStock(market.stockPrice);end
         market.trade(myRes.decision,oppRes.decision);
+        
+        % detect end of block
+        if mod(trial,sizeOfBlock) == 0
+            if strcmp(rule,'player1')
+                displayer.writeMessage('End of block','Wait for instruction');
+                fprintf('Waiting for insturctor to stop fMRI and press enter.')
+                triggerZero = keyboard.waitInstructorConfirm();
+                fprintf('Trigger received, starting block.\n');
+                displayer.blackScreen();
+                WaitSecs(1);
+            end
+        end
+        
     end
     
     % Update for last time and save to file

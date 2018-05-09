@@ -8,6 +8,7 @@ classdef keyboardHandler < handle
     properties
         quitkey     = 'ESCAPE';
         confirm     = '6^';
+        instructorConfirm = 'Return';
         buy         = '1!';  %'LeftArrow';
         noTrade     = '2@';  %'DownArrow';
         sell        = '3#';  %'RightArrow';
@@ -129,6 +130,19 @@ classdef keyboardHandler < handle
                 [keyIsDown, firstKeyPressTimes, firstKeyReleaseTimes] = KbQueueCheck(obj.devInd); 
                 if firstKeyPressTimes(KbName(obj.quitkey))
                     fprintf('[kbhandler]ESC is pressed.\n');
+                    break;
+                end
+            end
+        end
+        
+        function waitInstructorConfirm(obj)
+            fprintf('[kbhandler]Waiting for Enter...\n');
+            KbEventFlush();
+            [keyIsDown, firstKeyPressTimes, firstKeyReleaseTimes] = KbQueueCheck(obj.devInd);
+            while 1
+                [keyIsDown, firstKeyPressTimes, firstKeyReleaseTimes] = KbQueueCheck(obj.devInd); 
+                if firstKeyPressTimes(KbName(obj.instructorConfirm))
+                    fprintf('[kbhandler]Enter is pressed.\n');
                     break;
                 end
             end

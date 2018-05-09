@@ -175,7 +175,7 @@ classdef dataHandler <handle
         %----- Writing and Loading -----%
         function saveToFile(obj)
             result = obj;
-            filename = strcat('./RawData/EBG',datestr(now,'YYmmDD'),'_',datestr(now,'hhMM'),'_',obj.player1ID,'.mat');
+            filename = strcat('./RawData/EBG',datestr(now,'YYmmDD'),'_',datestr(now,'HHMM'),'_',obj.player1ID,'.mat');
             save(filename,'result');
             fprintf('Data saved to file.\n');
         end
