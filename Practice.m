@@ -26,54 +26,24 @@ try
     TRUE                = 1;
     FALSE               = 0;
     
-    %===== IP Config for local testing ===%
-    inputRule = input('Enter rule(1: fMRI 2:behavioral): ','s');
-    assert(strcmp(inputRule,'1') || strcmp(inputRule,'2'))
-    if strcmp(inputRule,'1') rule = 'player1'; end
-    if strcmp(inputRule,'2') rule = 'player2'; end
     
-    myID    = 'test';
-    oppID   = 'test';
-    %myIP    = '192.168.1.102';
-    %oppIP   = '192.168.1.104';
-    myIP    ='localhost';
-    oppIP    ='localhost';
-    if strcmp(rule,'player1')
-        myPort  = 5656;
-        oppPort = 7878;
-        displayerOn = TRUE;
-        autoMode = FALSE;
-    else
-        myPort  = 7878;
-        oppPort = 5656;
-        displayerOn = FALSE;
-        autoMode = TRUE;
-    end
-    
-    %===== Inputs =====%
-
-    fprintf('---Starting Experiment---\n');
-    %myID                = input('your ID: ','s');
-    %oppID               = input('Opponent ID: ','s');
-    %displayerOn         = FALSE;
-    screenID            = max(Screen('Screens'));
+    displayerOn = TRUE;
+    autoMode = FALSE;
     
     %===== Initialize Componets =====%
-    if strcmp(rule,'player1') keyboard    = keyboardHandler_fMRI(); end
-    if strcmp(rule,'player2') keyboard    = keyboardHandler_behavioral(); end
+    keyboard    = keyboardHandler_behavioral();
     displayer   = displayer(max(Screen('Screens')),displayerOn,decideTime);
     parser      = parser();
     
-    %===== Establish Connection =====% 
-    cnt = connector(rule,myID, oppID,myIP,myPort,oppIP,oppPort);
-    cnt.establish(myID,oppID);
     ListenChar(2);
     HideCursor();
     
     %===== Open Screen =====% 
-    fprintf('Start after 10 seconds\n');
-    %WaitSecs(10);
     displayer.openScreen();
+    
+    myID = 'practice';
+    oppID = 'practice';
+    rule = 'player1';
     
     %%%%%%%%%%%%%%%%%%%%  Start of real experiment %%%%%%%%%%%%%%%%%%%%
     
@@ -89,9 +59,10 @@ try
         %===== initializing block =====%
         
         if mod(trial,sizeOfBlock) == 1
+            
             if strcmp(rule,'player1')
-                displayer.writeMessage('Start of block','Wait for instructions');
-                fprintf('Waiting for trigger...\n');
+                displayer.writeMessage('Start of Block','Wait for instructions');
+                fprintf('Waiting for trigger\n');
                 triggerZero = keyboard.waitTrigger();
                 fprintf('Trigger received, starting block.\n');
                 displayer.blackScreen();
@@ -109,25 +80,13 @@ try
             displayer.blackScreen();
             WaitSecs(1);
         end
-        
-        if(trial == 21) market.setCondition(MARKET_BUBBLE); end
-        if(trial == 61) market.setCondition(MARKET_BURST);end
 
         %=========== Setting Up Trials ==============%
-        
-        %Syncing
-        if mod(trial,sizeOfBlock) == 1
-            displayer.writeMessage('Waiting for Opponent','');
-            cnt.syncTrial(trial);
-            displayer.blackScreen();
-        else
-            cnt.syncTrial(trial);
-        end
         
         % Update condition based on last decision
         data.updateCondition(market,me,opp,trial);
         statusData = data.getStatusData(trial);
-               
+       
         %=========== Fixation ==============%
         displayer.fixation(fixationTime);
        
@@ -251,10 +210,12 @@ try
         %========== Exchange and Save Data ===============%
         
         %Get opponent's response
-        oppResRaw = cnt.sendOwnResAndgetOppRes(parser.resToStr(myRes));
-        oppRes = parser.strToRes(oppResRaw);
+        desicionList = {'buy', 'no trade', 'sell'};
+        oppRes.decision = desicionList{randi(3)};
+        oppRes.events = cell(0,2);
+        oppRes.startOfTrial = startTime;
         
-        %Save Data
+        %Save response to datahandler
         data.saveResponse(myRes,oppRes,trial);
         
         %Update market and player
@@ -265,9 +226,8 @@ try
         market.trade(myRes.decision,oppRes.decision);
     end
     
-    % Update for last time and save to file
+    % update for the last time and save data
     data.updateCondition(market,me,opp,totalTrials+1);
-    data.saveToFile();
     
     %show result on screen
     result = data.getResult();

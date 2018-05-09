@@ -1,4 +1,4 @@
-classdef keyboardHandler < handle
+classdef keyboardHandler_fMRI < handle
     
     properties
        dev
@@ -18,17 +18,12 @@ classdef keyboardHandler < handle
     methods
         
         %---- Constructor -----%
-        function obj = keyboardHandler(keyboardName)
+        function obj = keyboardHandler_fMRI()
             obj.setupKeyboard();
         end
         
         function setupKeyboard(obj)
-              
-            
-            %if strcmp(keyboardName,'USB')
-            %    keyboardName = 'USB Keyboard';
-            %end
-            
+           
             obj.dev=PsychHID('Devices');
             obj.devInd = find(strcmpi('Keyboard', {obj.dev.usageName}) );
             KbQueueCreate(obj.devInd);  
@@ -89,31 +84,34 @@ classdef keyboardHandler < handle
 
         end
         
-        function waitSpacePress(obj)
+        function waitConfirmPress(obj)
+            fprintf('[kbhandler]Waiting for confirm...\n');
             KbEventFlush();
             [keyIsDown, firstKeyPressTimes, firstKeyReleaseTimes] = KbQueueCheck(obj.devInd);
             while 1
                 [keyIsDown, firstKeyPressTimes, firstKeyReleaseTimes] = KbQueueCheck(obj.devInd); 
                 if firstKeyPressTimes(KbName(obj.confirm))
-                    fprintf('space is pressed.\n');
+                    fprintf('[kbhandler]Confirm is pressed.\n');
                     break;
                 end
             end
         end
         
         function waitESCPress(obj)
+            fprintf('[kbhandler]Waiting for ESC...\n');
             KbEventFlush();
             [keyIsDown, firstKeyPressTimes, firstKeyReleaseTimes] = KbQueueCheck(obj.devInd);
             while 1
                 [keyIsDown, firstKeyPressTimes, firstKeyReleaseTimes] = KbQueueCheck(obj.devInd); 
                 if firstKeyPressTimes(KbName(obj.quitkey))
-                    fprintf('ESC is pressed.\n');
+                    fprintf('[kbhandler]ESC is pressed.\n');
                     break;
                 end
             end
         end
         
         function startTime = waitTrigger(obj)
+            fprintf('[kbhandler]Waiting for trigger...\n');
             KbEventFlush();
             [keyIsDown, firstKeyPressTimes, firstKeyReleaseTimes] = KbQueueCheck(obj.devInd);
             while 1
