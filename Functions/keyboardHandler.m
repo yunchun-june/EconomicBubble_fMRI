@@ -1,11 +1,11 @@
-classdef keyboardHandler_fMRI < handle
+classdef keyboardHandler < handle
     
     properties
        dev
        devInd
     end
     
-    properties (Constant)
+    properties
         quitkey     = 'ESCAPE';
         confirm     = '6^';
         buy         = '1!';  %'LeftArrow';
@@ -18,12 +18,36 @@ classdef keyboardHandler_fMRI < handle
     methods
         
         %---- Constructor -----%
-        function obj = keyboardHandler_fMRI()
-            obj.setupKeyboard();
+        function obj = keyboardHandler(mode)
+            obj.setupKeyboard(mode);
         end
         
-        function setupKeyboard(obj)
-           
+        function setupKeyboard(obj,mode)
+            
+            if strcmp(mode,'behavioral')
+                obj.confirm     = 'space';
+                obj.buy         = 'LeftArrow';  %'LeftArrow';
+                obj.noTrade     = 'DownArrow';  %'DownArrow';
+                obj.sell        = 'RightArrow';  %'RightArrow';
+                obj.see         = 'UpArrow';    %'UpArrow';
+            end
+            
+            if strcmp(mode,'fMRI')
+                obj.confirm     = '6^';
+                obj.buy         = '1!';  %'LeftArrow';
+                obj.noTrade     = '2@';  %'DownArrow';
+                obj.sell        = '3#';  %'RightArrow';
+                obj.see         = '4$';    %'UpArrow';
+            end
+            
+            if strcmp(mode,'fMRI_prac')
+                obj.confirm     = '4$';
+                obj.buy         = '6^';  %'LeftArrow';
+                obj.noTrade     = '7&';  %'DownArrow';
+                obj.sell        = '8*';  %'RightArrow';
+                obj.see         = '9(';    %'UpArrow';
+            end
+            
             obj.dev=PsychHID('Devices');
             obj.devInd = find(strcmpi('Keyboard', {obj.dev.usageName}) );
             KbQueueCreate(obj.devInd);  

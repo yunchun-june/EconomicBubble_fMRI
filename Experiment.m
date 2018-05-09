@@ -11,8 +11,8 @@ try
     initialStock        = 10;
     initialStockPrice   = 100;
     
-    sizeOfBlock         = 2;
-    totalTrials         = 6;
+    sizeOfBlock         = 1;
+    totalTrials         = 1;
     
     resultTime          =10;
     gaptime             =2;  %supposed to be 2~6 sec gitter
@@ -28,12 +28,12 @@ try
     
     %===== IP Config for local testing ===%
     inputRule = input('Enter rule(1: fMRI 2:behavioral): ','s');
+    myID      = input('Enter your ID:','s');
+    oppID     = input('Enter your opp ID:','s');
     assert(strcmp(inputRule,'1') || strcmp(inputRule,'2'))
     if strcmp(inputRule,'1') rule = 'player1'; end
     if strcmp(inputRule,'2') rule = 'player2'; end
-    
-    myID    = 'test';
-    oppID   = 'test';
+
     %myIP    = '192.168.1.102';
     %oppIP   = '192.168.1.104';
     myIP    ='localhost';
@@ -59,8 +59,8 @@ try
     screenID            = max(Screen('Screens'));
     
     %===== Initialize Componets =====%
-    if strcmp(rule,'player1') keyboard    = keyboardHandler_fMRI(); end
-    if strcmp(rule,'player2') keyboard    = keyboardHandler_behavioral(); end
+    if strcmp(rule,'player1') keyboard    = keyboardHandler('fMRI'); end
+    if strcmp(rule,'player2') keyboard    = keyboardHandler('behavioral'); end
     displayer   = displayer(max(Screen('Screens')),displayerOn,decideTime);
     parser      = parser();
     

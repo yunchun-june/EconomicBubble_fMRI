@@ -5,7 +5,9 @@ addpath('./Functions');
 %Screen('Preference', 'SkipSyncTests', 1);
 
 try
-
+    
+    rule = input('Enter rule(1: fMRI 2:behavioral): ','s');
+    
     %===== Parameters =====%
     initialCash         = 10000;
     initialStock        = 10;
@@ -31,7 +33,8 @@ try
     autoMode = FALSE;
     
     %===== Initialize Componets =====%
-    keyboard    = keyboardHandler_behavioral();
+    if strcmp(rule,'1') keyboard    = keyboardHandler('fMRI_prac'); end
+    if strcmp(rule,'2') keyboard    = keyboardHandler('behavioral'); end
     displayer   = displayer(max(Screen('Screens')),displayerOn,decideTime);
     parser      = parser();
     
@@ -43,7 +46,10 @@ try
     
     myID = 'practice';
     oppID = 'practice';
-    rule = 'player1';
+    
+    if strcmp(rule,'1') rule = 'player1'; end
+    if strcmp(rule,'2') rule = 'player2'; end
+    
     
     %%%%%%%%%%%%%%%%%%%%  Start of real experiment %%%%%%%%%%%%%%%%%%%%
     
@@ -63,7 +69,8 @@ try
             if strcmp(rule,'player1')
                 displayer.writeMessage('Start of Block','Wait for instructions');
                 fprintf('Waiting for trigger\n');
-                triggerZero = keyboard.waitTrigger();
+                %triggerZero = keyboard.waitTrigger();
+                WaitSecs(10);
                 fprintf('Trigger received, starting block.\n');
                 displayer.blackScreen();
                 WaitSecs(1);
