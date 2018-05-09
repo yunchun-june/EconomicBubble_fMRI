@@ -13,6 +13,7 @@ classdef displayer < handle
         col
         decideTime
         displayerOn
+        fontSize
     end
     
     properties (Constant)
@@ -42,6 +43,10 @@ classdef displayer < handle
             [obj.width, obj.height] = Screen('WindowSize', obj.wPtr);
             obj.xCen = obj.width/2;
             obj.yCen = obj.height/2;
+            
+            if obj.width >= 1000 obj.fontSize = 30; end
+            if obj.width < 1000 obj.fontSize = 15; end
+            
             for i = 1:10
                 obj.row(i) = -(i-6)*obj.height/10;
             end
@@ -60,8 +65,8 @@ classdef displayer < handle
         
         function writeMessage(obj,line1,line2)
             if ~obj.displayerOn return; end
-            obj.write(line1,40,3,'white',30);
-            obj.write(line2,40,5,'white',30);
+            obj.write(line1,40,3,'white',obj.fontSize);
+            obj.write(line2,40,5,'white',obj.fontSize);
             Screen('Flip',obj.wPtr);
         end
                 
@@ -76,7 +81,7 @@ classdef displayer < handle
             
             %delay
             Screen('Flip',obj.wPtr);
-            WaitSecs(1);
+            WaitSecs(0.5);
             
             %fixation square
             Screen('FillRect', obj.wPtr, obj.WHITE, [obj.xCen-l,obj.yCen-l,obj.xCen+l,obj.yCen+l]);
@@ -85,7 +90,7 @@ classdef displayer < handle
             
             %delay
             Screen('Flip',obj.wPtr);
-            WaitSecs(1);
+            WaitSecs(0.5);
         end
         
         function delay(obj,time)
@@ -110,20 +115,20 @@ classdef displayer < handle
             %--------------------------------------
             
             %1 Stock Price:  112(+6)
-            obj.write('Stock Price:',20,1,'white',30);
-            obj.write(num2str(data.stockPrice),40,1,'white',30);
+            obj.write('Stock Price',20,1,'white',obj.fontSize);
+            obj.write(num2str(data.stockPrice),40,1,'white',obj.fontSize);
             if data.change<0
                 output = strcat('(',num2str(data.change),')');
-                obj.write(output,45,1,'green',30);
+                obj.write(output,45,1,'green',obj.fontSize);
             end
             
             if data.change ==0
-                obj.write('(+0)',45,1,'white',30);
+                obj.write('(+0)',45,1,'white',obj.fontSize);
             end
             
             if data.change>0
                 output = strcat('(+',num2str(data.change),')');
-                obj.write(output,45,1,'red',30);
+                obj.write(output,45,1,'red',obj.fontSize);
             end
             
             %2 Stock Hold  10
@@ -132,15 +137,15 @@ classdef displayer < handle
             %5
             %6 Total       11000
             
-            obj.write('Stock Hold',20,2,'white',30);
-            obj.write('Stock Value',20,3,'white',30);
-            obj.write('Cash',20,4,'white',30);
-            obj.write('Total',20,6,'white',30);
+            obj.write('Stock Hold',20,2,'white',obj.fontSize);
+            obj.write('Stock Value',20,3,'white',obj.fontSize);
+            obj.write('Cash',20,4,'white',obj.fontSize);
+            obj.write('Total',20,6,'white',obj.fontSize);
             
-            obj.write(num2str(data.stock),40,2,'white',30);
-            obj.write(num2str(data.stockValue),40,3,'white',30);
-            obj.write(num2str(data.cash),40,4,'white',30);
-            obj.write(num2str(data.totalAsset),40,6,'white',30);
+            obj.write(num2str(data.stock),40,2,'white',obj.fontSize);
+            obj.write(num2str(data.stockValue),40,3,'white',obj.fontSize);
+            obj.write(num2str(data.cash),40,4,'white',obj.fontSize);
+            obj.write(num2str(data.totalAsset),40,6,'white',obj.fontSize);
 
             %3 ******
             %4 
@@ -150,37 +155,37 @@ classdef displayer < handle
             for i = 5:-1:1
                 startpoint= 60;
                 if see
-                    if strcmp(data.oppDecision{1,i},'.') obj.write('.',startpoint+i,3,'white',30); end
-                    if strcmp(data.oppDecision{1,i},'buy') obj.write('B',startpoint+i,3,'red',18); end
-                    if strcmp(data.oppDecision{1,i},'no trade') obj.write('N',startpoint+i,3,'white',18); end
-                    if strcmp(data.oppDecision{1,i},'sell') obj.write('S',startpoint+i,3,'green',18); end
+                    if strcmp(data.oppDecision{1,i},'.') obj.write('.',startpoint+i*2,3,'white',obj.fontSize); end
+                    if strcmp(data.oppDecision{1,i},'buy') obj.write('B',startpoint+i*2,3,'red',obj.fontSize); end
+                    if strcmp(data.oppDecision{1,i},'no trade') obj.write('N',startpoint+i*2,3,'white',obj.fontSize); end
+                    if strcmp(data.oppDecision{1,i},'sell') obj.write('S',startpoint+i*2,3,'green',obj.fontSize); end
                 else
-                    obj.write('*',startpoint+i,3,'white',30);
+                    obj.write('*',startpoint+i*2,3,'white',obj.fontSize);
                 end
             end
             
-            obj.write('Rival Total:',55,6,'white',30);
-            obj.write(num2str(data.rivalTotal),70,6,'white',30);
+            obj.write('Rival Total:',55,6,'white',obj.fontSize);
+            obj.write(num2str(data.rivalTotal),70,6,'white',obj.fontSize);
             
-            obj.write(divider,20,7,'white',30);
+            obj.write(divider,20,7,'white',obj.fontSize);
             
             % buy     no trade    sell    [timer]
             
             if timer <= obj.decideTime
-                obj.write('Buy'      ,27,8,'white',30);
-                obj.write('No Trade' ,43,8,'white',30);
-                obj.write('Sell'     ,59,8,'white',30);
+                obj.write('Buy'      ,27,8,'white',obj.fontSize);
+                obj.write('No Trade' ,43,8,'white',obj.fontSize);
+                obj.write('Sell'     ,59,8,'white',obj.fontSize);
 
                 if confirmed == 0
-                    if strcmp(temp ,'buy')      obj.write('Buy'     ,27,8,'yellow',30); end
-                    if strcmp(temp ,'no trade') obj.write('No Trade',43,8,'yellow',30); end
-                    if strcmp(temp ,'sell')     obj.write('Sell'    ,59,8,'yellow',30); end
+                    if strcmp(temp ,'buy')      obj.write('Buy'     ,27,8,'yellow',obj.fontSize); end
+                    if strcmp(temp ,'no trade') obj.write('No Trade',43,8,'yellow',obj.fontSize); end
+                    if strcmp(temp ,'sell')     obj.write('Sell'    ,59,8,'yellow',obj.fontSize); end
                 end
 
                 if confirmed == 1
-                    if strcmp(temp ,'buy')      obj.write('Buy'     ,27,8,'red',30); end
-                    if strcmp(temp ,'no trade') obj.write('No Trade',43,8,'red',30); end
-                    if strcmp(temp ,'sell')     obj.write('Sell'    ,59,8,'red',30); end
+                    if strcmp(temp ,'buy')      obj.write('Buy'     ,27,8,'red',obj.fontSize); end
+                    if strcmp(temp ,'no trade') obj.write('No Trade',43,8,'red',obj.fontSize); end
+                    if strcmp(temp ,'sell')     obj.write('Sell'    ,59,8,'red',obj.fontSize); end
                 end
             end
             
@@ -217,23 +222,23 @@ classdef displayer < handle
         end
         
         function showResult(obj,result)
-            obj.write('[ Fianl Result ]',38,3,'white',30);
+            obj.write('[ Fianl Result ]',38,3,'white',obj.fontSize);
             
-            obj.write('Your Cash',30,4,'white',30);
-            obj.write(num2str(result.myCash),50,4,'white',30);
-            obj.write('Opponent Cash',30,5,'white',30);
-            obj.write(num2str(result.oppCash),50,5,'white',30);
+            obj.write('Your Cash',30,4,'white',obj.fontSize);
+            obj.write(num2str(result.myCash),50,4,'white',obj.fontSize);
+            obj.write('Opponent Cash',30,5,'white',obj.fontSize);
+            obj.write(num2str(result.oppCash),50,5,'white',obj.fontSize);
             
             if (result.myCash > result.oppCash)
-                obj.write('YOU WIN',40,6,'red',30);
+                obj.write('YOU WIN',40,6,'red',obj.fontSize);
                 fprintf('[RESULT] you win\n');
             end
             if (result.myCash == result.oppCash)
-                obj.write('DRAW ',40,6,'white',30);
+                obj.write('DRAW ',40,6,'white',obj.fontSize);
                 fprintf('[RESULT] draw\n');
             end
             if (result.myCash < result.oppCash)
-                obj.write('YOU LOSE',40,6,'green',30);
+                obj.write('YOU LOSE',40,6,'green',obj.fontSize);
                 fprintf('[RESULT] you lose\n');
             end
             Screen('Flip',obj.wPtr);

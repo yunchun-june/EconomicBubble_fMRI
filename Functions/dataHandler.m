@@ -15,7 +15,8 @@ classdef dataHandler <handle
 %    player1event           =12
 %    player2Decision        =13
 %    player2event           =14
-%    startofTrial           =15
+%    p1startofTrial         =15
+%    p2startofTrial         =16
 
     properties
         player1ID
@@ -33,7 +34,7 @@ classdef dataHandler <handle
             obj.player2ID = ID2;
             obj.rule = rule;
             obj.totalTrial = trials+1;
-            obj.result = cell(trials,14);
+            obj.result = cell(trials,16);
         end
         
         %----- Updating Data -----%
@@ -80,7 +81,7 @@ classdef dataHandler <handle
             obj.result{trial,14} = p2Res.events;
             
             obj.result{trial,15} = p1Res.startOfTrial;
-            obj.result{trial,15} = p2Res.startOfTrial
+            obj.result{trial,16} = p2Res.startOfTrial;
             
         end
         
@@ -170,6 +171,7 @@ classdef dataHandler <handle
                 data.oppCash = obj.result{obj.totalTrial,5};
             end
         end
+        
         %----- Writing and Loading -----%
         function saveToFile(obj)
             result = obj;

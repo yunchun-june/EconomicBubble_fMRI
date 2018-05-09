@@ -90,13 +90,24 @@ classdef keyboardHandler < handle
         end
         
         function waitSpacePress(obj)
-            fprintf('press space to start.\n');
             KbEventFlush();
             [keyIsDown, firstKeyPressTimes, firstKeyReleaseTimes] = KbQueueCheck(obj.devInd);
             while 1
                 [keyIsDown, firstKeyPressTimes, firstKeyReleaseTimes] = KbQueueCheck(obj.devInd); 
-                if firstKeyPressTimes(KbName('space'))
+                if firstKeyPressTimes(KbName(obj.confirm))
                     fprintf('space is pressed.\n');
+                    break;
+                end
+            end
+        end
+        
+        function waitESCPress(obj)
+            KbEventFlush();
+            [keyIsDown, firstKeyPressTimes, firstKeyReleaseTimes] = KbQueueCheck(obj.devInd);
+            while 1
+                [keyIsDown, firstKeyPressTimes, firstKeyReleaseTimes] = KbQueueCheck(obj.devInd); 
+                if firstKeyPressTimes(KbName(obj.quitkey))
+                    fprintf('ESC is pressed.\n');
                     break;
                 end
             end
