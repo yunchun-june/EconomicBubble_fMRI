@@ -269,7 +269,7 @@ try
             if strcmp(rule,'player1')
                 displayer.writeMessage('End of block','Wait for instruction');
                 fprintf('Waiting for insturctor to stop fMRI and press enter.')
-                triggerZero = keyboard.waitInstructorConfirm();
+                keyboard.waitInstructorConfirm();
                 fprintf('Trigger received, starting block.\n');
                 displayer.blackScreen();
                 WaitSecs(1);
