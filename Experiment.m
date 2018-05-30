@@ -11,8 +11,8 @@ try
     initialStock        = 10;
     initialStockPrice   = 100;
     
-    sizeOfBlock         = 1;
-    totalTrials         = 1;
+    sizeOfBlock         = 2;
+    totalTrials         = 6;
     
     resultTime          =10;
     gaptime             =2;  %supposed to be 2~6 sec gitter
@@ -26,10 +26,13 @@ try
     TRUE                = 1;
     FALSE               = 0;
     
-    %===== IP Config for local testing ===%
-    inputRule = input('Enter rule(1: fMRI 2:behavioral): ','s');
-    myID      = input('Enter your ID:','s');
-    oppID     = input('Enter your opp ID:','s');
+    %===== IP Config ===%
+    inputRule = input('Enter rule(1: NTU 2:NCCU): ','s');
+    
+    %myID      = input('Enter your ID:','s');
+    %oppID     = input('Enter your opp ID:','s');
+    myID = 'test';
+    oppID = 'test';
     assert(strcmp(inputRule,'1') || strcmp(inputRule,'2'))
     if strcmp(inputRule,'1') rule = 'player1'; end
     if strcmp(inputRule,'2') rule = 'player2'; end
@@ -41,13 +44,13 @@ try
     if strcmp(rule,'player1')
         myPort  = 5656;
         oppPort = 7878;
-        displayerOn = TRUE;
+        displayerOn = FALSE;
         autoMode = FALSE;
     else
         myPort  = 7878;
         oppPort = 5656;
         displayerOn = FALSE;
-        autoMode = TRUE;
+        autoMode = FALSE;
     end
     
     %===== Inputs =====%
@@ -59,8 +62,8 @@ try
     screenID            = max(Screen('Screens'));
     
     %===== Initialize Componets =====%
-    if strcmp(rule,'player1') keyboard    = keyboardHandler('fMRI'); end
-    if strcmp(rule,'player2') keyboard    = keyboardHandler('behavioral'); end
+    if strcmp(rule,'player1') keyboard    = keyboardHandler('NTU'); end
+    if strcmp(rule,'player2') keyboard    = keyboardHandler('NCCU'); end
     displayer   = displayer(max(Screen('Screens')),displayerOn,decideTime);
     parser      = parser();
     
@@ -89,25 +92,28 @@ try
         %===== initializing block =====%
         
         if mod(trial,sizeOfBlock) == 1
-            if strcmp(rule,'player1')
-                displayer.writeMessage('Start of block','Waiting for fMRI...');
+            
+            triggerZero = GetSecs();
+            
+            if ~autoMode
+                
+                %waiting for trigger
+                displayer.writeMessage('Start of block','Wait for instruction');
                 fprintf('Waiting for trigger...\n');
                 triggerZero = keyboard.waitTrigger();
                 fprintf('Trigger received, starting block.\n');
                 displayer.blackScreen();
                 WaitSecs(1);
+                
+                %waiting for subject to start
+                displayer.writeMessage('Press confirm to start.','');
+                fprintf('Waiting for subject to press confirm.\n');
+                keyboard.waitConfirmPress();
+                fprintf('Subject started the program.\n');
+                displayer.blackScreen();
+                WaitSecs(1);
             end
             
-            if strcmp(rule,'player2')
-                triggerZero = GetSecs();
-            end
-
-            displayer.writeMessage('Press confirm to start.','');
-            fprintf('Waiting for subject to press confirm.\n');
-            keyboard.waitConfirmPress();
-            fprintf('Subject started the program.\n');
-            displayer.blackScreen();
-            WaitSecs(1);
         end
         
         if(trial == 21) market.setCondition(MARKET_BUBBLE); end
@@ -266,16 +272,15 @@ try
         
         % detect end of block
         if mod(trial,sizeOfBlock) == 0
-            if strcmp(rule,'player1')
-                displayer.writeMessage('End of block','Wait for instruction');
-                fprintf('Waiting for insturctor to stop fMRI and press enter.')
-                keyboard.waitInstructorConfirm();
-                fprintf('Trigger received, starting block.\n');
+            if ~autoMode
+                displayer.writeMessage('End of block','');
+                fprintf('Waiting for Trigger to stop.\n')
+                keyboard.waitTriggerStop();
+                fprintf('Trigger stopped.\n');
                 displayer.blackScreen();
                 WaitSecs(1);
             end
         end
-        
     end
     
     % Update for last time and save to file

@@ -20,46 +20,63 @@ classdef keyboardHandler < handle
         
         %---- Constructor -----%
         function obj = keyboardHandler(mode)
-            obj.setupKeyboard(mode);
-        end
-        
-        function setupKeyboard(obj,mode)
             
             if strcmp(mode,'behavioral')
                 obj.confirm     = 'space';
-                obj.buy         = 'LeftArrow';  %'LeftArrow';
-                obj.noTrade     = 'DownArrow';  %'DownArrow';
-                obj.sell        = 'RightArrow';  %'RightArrow';
-                obj.see         = 'UpArrow';    %'UpArrow';
+                obj.buy         = 'LeftArrow';
+                obj.noTrade     = 'DownArrow';
+                obj.sell        = 'RightArrow'; 
+                obj.see         = 'UpArrow';
             end
             
             if strcmp(mode,'fMRI')
                 obj.confirm     = '6^';
-                obj.buy         = '1!';  %'LeftArrow';
-                obj.noTrade     = '2@';  %'DownArrow';
-                obj.sell        = '3#';  %'RightArrow';
-                obj.see         = '4$';    %'UpArrow';
+                obj.buy         = '1!';
+                obj.noTrade     = '2@'; 
+                obj.sell        = '3#'; 
+                obj.see         = '4$'; 
             end
             
             if strcmp(mode,'fMRI_prac')
                 obj.confirm     = '4$';
-                obj.buy         = '6^';  %'LeftArrow';
-                obj.noTrade     = '7&';  %'DownArrow';
-                obj.sell        = '8*';  %'RightArrow';
-                obj.see         = '9(';    %'UpArrow';
+                obj.buy         = '6^'; 
+                obj.noTrade     = '7&';
+                obj.sell        = '8*'; 
+                obj.see         = '9('; 
+            end
+            
+            if strcmp(mode,'NTU')
+                obj.confirm     = '6^';
+                obj.buy         = '1!'; 
+                obj.noTrade     = '2@'; 
+                obj.sell        = '3#'; 
+                obj.see         = '4$'; 
+            end
+            
+            if strcmp(mode,'NCCU')
+                obj.confirm     = '6^';
+                obj.buy         = '1!';
+                obj.noTrade     = '2@';
+                obj.sell        = '3#';
+                obj.see         = '4$';
             end
             
             obj.dev=PsychHID('Devices');
-            obj.devInd = find(strcmpi('Keyboard', {obj.dev.usageName}) );
+            
+            if strcmp(mode,'NCCU')
+                isKb = strcmpi('Keyboard', {obj.dev.usageName});
+                isUSB = strcmpi('USB', {obj.dev.transport});
+                obj.devInd = find(isKb & isUSB);
+            else
+                obj.devInd = find(strcmpi('Keyboard', {obj.dev.usageName}) );
+            end
+            
             KbQueueCreate(obj.devInd);  
             KbQueueStart(obj.devInd);
             KbName('UnifyKeyNames');
         end
        
         %----- Functions -----%
-        function detected = detectEsc(obj)
-            
-        end
         
         function [keyName, timing] = getResponse(obj,timesUp)
             
@@ -159,6 +176,29 @@ classdef keyboardHandler < handle
                     break;
                 end
             end
+        end
+        
+        function waitTriggerStop(obj)
+            fprintf('[kbhandler]Waiting for trigger to stop...\n');
+            KbEventFlush();
+            [keyIsDown, firstKeyPressTimes, firstKeyReleaseTimes] = KbQueueCheck(obj.devInd); 
+            
+            lastTrigger = GetSecs();
+            while 1
+                WaitSecs(0.5);
+                [keyIsDown, firstKeyPressTimes, firstKeyReleaseTimes] = KbQueueCheck(obj.devInd); 
+                
+                if firstKeyPressTimes(KbName(obj.trigger))
+                    lastTrigger = GetSecs();
+                end
+                                
+                %fprintf('last trigger '+ num2str(lastTrigger) + ' secs ago.\n')
+                if GetSecs() - lastTrigger > 5
+                    fprintf('[kbhandler] Trigger stopped.\n')
+                    break;
+                end 
+            end
+            
         end
         
     end
