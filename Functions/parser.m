@@ -10,8 +10,7 @@ classdef parser
         end
         
         function str = resToStr(obj, res)
-            str = '';
-            str = strcat(str,res.decision,',',num2str(res.startOfTrial));
+            str = res.decision;
             
             %for i = 1:size(res.events)
             %    str = strcat(str,',',res.events{i,1},',',res.events{i,2});
@@ -19,9 +18,8 @@ classdef parser
         end
         
         function res = strToRes(obj,str)
-            c = strsplit(str,',');
-            res.decision = c{1};
-            res.startOfTrial = str2double(c{2});
+            res.decision = str;
+            res.startOfTrial = 0;
             res.events = cell(0,2);
             
             %sizec = size(c);

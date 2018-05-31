@@ -3,7 +3,7 @@
 % Usage - message = client(host, port, number_of_retries)
 function message = client(host, port, number_of_retries)
 
-import java.net.Socket
+    import java.net.Socket
     import java.io.*
 
     if (nargin < 3)

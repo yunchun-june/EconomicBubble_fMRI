@@ -37,18 +37,13 @@ try
     if strcmp(inputRule,'1') rule = 'player1'; end
     if strcmp(inputRule,'2') rule = 'player2'; end
 
-    %myIP    = '192.168.1.102';
-    %oppIP   = '192.168.1.104';
-    myIP    ='localhost';
-    oppIP    ='localhost';
+    oppIP = '140.112.62.11';
+    oppPort = 7676;
+
     if strcmp(rule,'player1')
-        myPort  = 5656;
-        oppPort = 7878;
         displayerOn = FALSE;
         autoMode = FALSE;
     else
-        myPort  = 7878;
-        oppPort = 5656;
         displayerOn = FALSE;
         autoMode = FALSE;
     end
@@ -68,7 +63,7 @@ try
     parser      = parser();
     
     %===== Establish Connection =====% 
-    cnt = connector(rule,myID, oppID,myIP,myPort,oppIP,oppPort);
+    cnt = connector(rule,myID, oppID,oppIP,oppPort);
     cnt.establish(myID,oppID);
     ListenChar(2);
     HideCursor();
