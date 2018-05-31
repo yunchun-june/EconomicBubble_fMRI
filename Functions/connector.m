@@ -25,6 +25,7 @@ classdef connector
             obj.destIP = destIP;
             obj.destPort = destPort;
             
+            fprintf('Connecting to HPC...');
             while 1
                 try
                     obj.socket = Socket(obj.destIP, obj.destPort);
@@ -32,17 +33,7 @@ classdef connector
                     obj.d_input_stream = DataInputStream(obj.input_stream);
                     obj.output_stream  = obj.socket.getOutputStream;
                     obj.d_output_stream = DataOutputStream(obj.output_stream);
-                    break;
-                catch
-                    WaitSecs(0.5);
-                end
-            end
-            
-        end
-        
-        function connectHPC(obj)
-            while 1
-                try
+                    
                     import java.net.Socket
                     import java.io.*
                     
@@ -54,18 +45,16 @@ classdef connector
                         obj.send('NCCU');
                     end
                     
+                    fprintf('Connected to HPC.\n');
+                    
                     break;
-                catch exception
-                    %fprintf(1,'Error: %s\n',getReport(exception));
+                catch
                     WaitSecs(0.5);
                 end
-                
             end
             
-            
-            
-            fprintf('Connected to HPC.\n')
         end
+       
         
         function close(obj)
             obj.socket.close();
@@ -80,7 +69,6 @@ classdef connector
             %server(message,obj.ownPort,timeout);
             obj.d_output_stream.writeBytes(char(message));
             obj.d_output_stream.flush;
-            fprintf('Message sent.');
             WaitSecs(1);
         end
         
@@ -120,8 +108,6 @@ classdef connector
             fprintf('-----------------------------\n');
             fprintf('Connecting to HPC ....\n');
             
-            obj.connectHPC();
-            
             fprintf('Verifying Opponent ....\n');
             
             if(strcmp(obj.rule,'player1'))
@@ -129,7 +115,6 @@ classdef connector
                 reveivedMessage = strcat(myID,',',oppID);
                 
                 obj.send(sentMessage);
-                
                 fprintf('Mesage sent to player2.\n');
                 syncResult = obj.fetch();
                 assert(strcmp(syncResult,reveivedMessage));
