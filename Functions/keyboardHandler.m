@@ -67,12 +67,15 @@ classdef keyboardHandler < handle
                 isKb = strcmpi('Keyboard', {obj.dev.usageName});
                 isUSB = strcmpi('USB', {obj.dev.transport});
                 obj.devInd = find(isKb & isUSB);
+                KbQueueCreate(obj.devInd);  
+                KbQueueStart(obj.devInd);
             else
                 obj.devInd = find(strcmpi('Keyboard', {obj.dev.usageName}) );
+                KbQueueCreate();  
+                KbQueueStart();
             end
             
-            KbQueueCreate(obj.devInd);  
-            KbQueueStart(obj.devInd);
+            
             KbName('UnifyKeyNames');
         end
        
