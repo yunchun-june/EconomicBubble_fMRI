@@ -2,7 +2,7 @@ clear all;
 close all;
 clc;
 addpath('./Functions');
-%Screen('Preference', 'SkipSyncTests', 1);
+Screen('Preference', 'SkipSyncTests', 1);
 
 try
 
@@ -11,7 +11,7 @@ try
     initialStock        = 10;
     initialStockPrice   = 100;
     
-    sizeOfBlock         = 2;
+    sizeOfBlock         = 3;
     totalTrials         = 6;
     
     resultTime          =10;
@@ -44,7 +44,7 @@ try
         displayerOn = FALSE;
         autoMode = FALSE;
     else
-        displayerOn = FALSE;
+        displayerOn = TRUE;
         autoMode = FALSE;
     end
     
@@ -300,8 +300,7 @@ try
     displayer.blackScreen();
     WaitSecs(1);
     
-    displayer.writeMessage('End of experiment','Wait for instruction');
-    keyboard.waitESCPress();
+    displayer.writeMessage('End of experiment','');
 
     displayer.closeScreen();
     ListenChar();
