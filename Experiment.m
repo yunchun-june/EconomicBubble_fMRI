@@ -11,8 +11,8 @@ try
     initialStock        = 10;
     initialStockPrice   = 100;
     
-    sizeOfBlock         = 3;
-    totalTrials         = 6;
+    sizeOfBlock         = 20;
+    totalTrials         = 100;
     
     resultTime          =10;
     gaptime             =2;  %supposed to be 2~6 sec gitter
@@ -41,7 +41,7 @@ try
     oppPort = 7676;
 
     if strcmp(rule,'player1')
-        displayerOn = FALSE;
+        displayerOn = TRUE;
         autoMode = FALSE;
     else
         displayerOn = TRUE;
