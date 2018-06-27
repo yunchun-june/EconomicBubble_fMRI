@@ -301,6 +301,8 @@ try
     WaitSecs(1);
     
     displayer.writeMessage('End of experiment','');
+    
+    WaitSecs(30);
 
     displayer.closeScreen();
     ListenChar();
