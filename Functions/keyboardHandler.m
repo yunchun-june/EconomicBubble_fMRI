@@ -65,8 +65,8 @@ classdef keyboardHandler < handle
             
             if strcmp(mode,'NCCU')
                 isKb = strcmpi('Keyboard', {obj.dev.usageName});
-                isUSB = strcmpi('USB', {obj.dev.transport});
-                obj.devInd = find(isKb & isUSB);
+                isCurrent = strcmpi('Current Designs, Inc.', {obj.dev.manufacturer});
+                obj.devInd = find(isKb & isCurrent);
                 KbQueueCreate(obj.devInd);  
                 KbQueueStart(obj.devInd);
             else
