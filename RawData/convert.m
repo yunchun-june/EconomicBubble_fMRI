@@ -1,5 +1,5 @@
-filename = "EBG180517_1636_test";
-
+filename = "EBG180706_1022_player1";
+addpath('../Functions');
 load(filename+".mat");
 
 % block     1
